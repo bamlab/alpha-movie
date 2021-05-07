@@ -60,6 +60,9 @@ public class AlphaMovieView extends GLTextureView {
     private boolean isPacked;
     private String shader;
 
+    private boolean autoPlayAfterResume;
+    private boolean playAfterResume;
+
     private PlayerState state = PlayerState.NOT_PREPARED;
 
     public AlphaMovieView(Context context, AttributeSet attrs) {
@@ -107,14 +110,11 @@ public class AlphaMovieView extends GLTextureView {
     private void obtainRendererOptions(AttributeSet attrs) {
         if (attrs != null) {
             TypedArray arr = getContext().obtainStyledAttributes(attrs, R.styleable.AlphaMovieView);
-            int alphaColor = arr.getColor(R.styleable.AlphaMovieView_alphaColor, NOT_DEFINED_COLOR);
-            boolean isPacked = arr.getBoolean(R.styleable.AlphaMovieView_packed, false);
-            String shader = arr.getString(R.styleable.AlphaMovieView_shader);
-            float accuracy = arr.getFloat(R.styleable.AlphaMovieView_accuracy, NOT_DEFINED);
-            this.alphaColor = alphaColor;
-            this.accuracy = accuracy;
-            this.isPacked = isPacked;
-            this.shader = shader;
+            this.accuracy = arr.getFloat(R.styleable.AlphaMovieView_accuracy, NOT_DEFINED);
+            this.alphaColor = arr.getColor(R.styleable.AlphaMovieView_alphaColor, NOT_DEFINED_COLOR);
+            this.autoPlayAfterResume = arr.getBoolean(R.styleable.AlphaMovieView_autoPlayAfterResume, false);
+            this.isPacked = arr.getBoolean(R.styleable.AlphaMovieView_packed, false);
+            this.shader = arr.getString(R.styleable.AlphaMovieView_shader);
             arr.recycle();
             updateRendererOptions();
         }
@@ -200,6 +200,10 @@ public class AlphaMovieView extends GLTextureView {
         if (isSurfaceCreated) {
             prepareAndStartMediaPlayer();
         }
+    }
+
+    public void setAutoPlayAfterResume(boolean autoPlayAfterResume) {
+        this.autoPlayAfterResume = autoPlayAfterResume;
     }
 
     public void setPacked(boolean isPacked) {
@@ -309,11 +313,18 @@ public class AlphaMovieView extends GLTextureView {
     @Override
     public void onResume() {
         super.onResume();
+        if (autoPlayAfterResume && playAfterResume) {
+            playAfterResume = false;
+            start();
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        if (isPlaying() && autoPlayAfterResume) {
+            playAfterResume = true;
+        }
         pause();
     }
 

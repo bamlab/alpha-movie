@@ -2,6 +2,7 @@
 <resources>
     <declare-styleable name="AlphaMovieView">
         <attr name="alphaColor" format="color" />
+        <attr name="autoPlayAfterResume" format="boolean" />
         <attr name="packed" format="boolean" />
         <attr name="shader" format="string" />
         <attr name="accuracy" format="float" />
