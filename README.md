@@ -2,7 +2,13 @@
 
 Alpha Movie is an Android video player library with alpha channel support.
 
-Video Player uses `OpenGL` to render video and apply *shader* that makes alpha compositing possible. The player encapsulates `MediaPlayer` and has its base functionality. Video stream is displayed by `TextureView`.
+Video Player uses `OpenGL` to render video and apply a *shader* that makes alpha compositing possible. The player encapsulates `MediaPlayer` and has its base functionality. Video stream is displayed by `TextureView`.
+
+This fork comes with the added feature of being able to display "alpha-packed" videos such as the one shown below.
+![image](https://user-images.githubusercontent.com/314281/117477004-0b9e3080-af90-11eb-8f2e-a69ecb1353e9.png)
+
+With this, you can convert webm videos with transparency into "alpha-packed" mp4 videos in order to use them in your Android app. Refer [here](#alpha-packed-videos) for more details.
+(Footballer demo video taken from [https://simpl.info/videoalpha/](https://simpl.info/videoalpha/))
 
 ---
 
@@ -81,6 +87,30 @@ You need to add `alphaMovieView.onPause()` and `alphaMovieView.onResume()` in ac
 
 Video playback can be paused and resumed using `alphaMovieView.pause()` and `alphaMovieView.start()` methods.
 
+## Alpha Packed Videos
+
+webm videos containing alpha data can be converted into an "alpha packed" video that contains the color frames on the left, and alpha frames on the right of the video.
+This results in a video that can now be processed by the alpha packed video shader bundled in this package.
+
+To generate and play such a video from an existing transparent webm video, do the following:
+
+1. Download [ffmpeg](https://ffmpeg.org/download.html). The most recent version is recommended but anything after 20th July 2016 should work.
+1. Run `ffmpeg -vcodec libvpx -i input_video.webm -vf "split [a], pad=iw*2:ih [b], [a] alphaextract, [b] overlay=w" -y output_video.mp4`
+    This will generate the `output_video.mp4` file in the directory containing `input_video.webm`
+1. Put `output_video.mp4` in your assets and follow the steps above to load the video into the AlphaMovieView.
+1. Change the xml to the following
+```xml
+<com.alphamovie.lib.AlphaMovieView
+    android:id="@+id/video_player"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    custom:packed="true"
+/>
+```
+
+The result will look like the following. You can view this in the example app in this project.
+![image](https://user-images.githubusercontent.com/314281/117478937-57ea7000-af92-11eb-9ade-757eb1bda991.png)
+
 ---
 
 ## How it works?
@@ -148,3 +178,4 @@ And define your custom shader in *string* values, for example:
 ```
 
 In this case accuracy and alphaColor attrs are not affecting anything because they are used only when custom shader is not defined.
+
