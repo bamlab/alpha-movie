@@ -40,7 +40,6 @@
             custom:alphaColor="#00ff00"
             custom:accuracy="0.4"/>
     </FrameLayout>
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -75,22 +74,35 @@
             android:contentDescription="@null"/>
 
     </LinearLayout>
-
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center">
-
-        <Button
-            android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/change_bg"
-            android:textSize="@dimen/change_bg_button_text_size"
-            android:textColor="@android:color/white"
-            android:background="@drawable/button_background"
-            android:onClick="changeBackground"
-            android:layout_margin="@dimen/change_bg_button_margin" />
+            android:gravity="center"
+            android:orientation="vertical">
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/change_bg_button_margin"
+                android:background="@drawable/button_background"
+                android:onClick="changeBackground"
+                android:text="@string/change_bg"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/change_bg_button_text_size" />
+            <Button
+                android:id="@+id/packed_video_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/change_bg_button_margin"
+                android:background="@drawable/button_background"
+                android:onClick="togglePackedVideo"
+                android:text="@string/use_packed_video"
+                android:textColor="@android:color/white"
+                android:textSize="@dimen/change_bg_button_text_size" />
 
-    </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>

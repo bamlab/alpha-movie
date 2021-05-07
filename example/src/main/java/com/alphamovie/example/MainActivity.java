@@ -20,12 +20,14 @@ import android.graphics.PixelFormat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 
 import com.alphamovie.lib.AlphaMovieView;
 
 public class MainActivity extends AppCompatActivity {
     public static final String FILENAME = "ball.mp4";
+    public static final String PACKED_FILENAME = "soccer1.mp4";
 
     public static final int FIRST_BG_INDEX = 0;
     public static final int BG_ARRAY_LENGTH = 3;
@@ -37,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ImageView imageViewBackground;
     private int bgIndex = FIRST_BG_INDEX;
+    private boolean isPacked = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,5 +80,11 @@ public class MainActivity extends AppCompatActivity {
     public void changeBackground(View view) {
         bgIndex = ++bgIndex % BG_ARRAY_LENGTH;
         imageViewBackground.setImageResource(backgroundResources[bgIndex]);
+    }
+
+    public void togglePackedVideo(View view) {
+        isPacked = !isPacked;
+        ((Button) view).setText(isPacked ? R.string.use_normal_video : R.string.use_packed_video);
+        alphaMovieView.setVideoFromAssets(isPacked ? PACKED_FILENAME : FILENAME, isPacked);
     }
 }

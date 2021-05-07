@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">Alpha Movie</string>
     <string name="change_bg">Change background</string>
+    <string name="use_packed_video">Use alpha packed video</string>
+    <string name="use_normal_video">Use normal video</string>
     <string name="shader_custom">#extension GL_OES_EGL_image_external : require\n
             precision mediump float;
             varying vec2 vTextureCoord;
