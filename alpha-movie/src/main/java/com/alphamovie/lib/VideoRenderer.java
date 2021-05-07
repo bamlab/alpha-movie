@@ -44,8 +44,8 @@ class VideoRenderer implements GLTextureView.Renderer, SurfaceTexture.OnFrameAva
             // X, Y, Z, U, V
             -1.0f, -1.0f, 0, 0.f, 0.f,
             1.0f, -1.0f, 0, 1.f, 0.f,
-            -1.0f,  1.0f, 0, 0.f, 1.f,
-            1.0f,  1.0f, 0, 1.f, 1.f,
+            -1.0f, 1.0f, 0, 0.f, 1.f,
+            1.0f, 1.0f, 0, 1.f, 1.f,
     };
 
     private FloatBuffer triangleVertices;
@@ -79,6 +79,17 @@ class VideoRenderer implements GLTextureView.Renderer, SurfaceTexture.OnFrameAva
             + "  }\n"
             + "}\n";
 
+    private final String alphaPackedShader = "#extension GL_OES_EGL_image_external : require\n"
+            + "precision mediump float;\n"
+            + "varying vec2 vTextureCoord;\n"
+            + "uniform samplerExternalOES sTexture;\n"
+            + "varying mediump float text_alpha_out;\n"
+            + "void main() {\n"
+            + "  vec4 color = texture2D(sTexture, vec2(vTextureCoord.x / 2.0, vTextureCoord.y));\n"
+            + "  float alpha = texture2D(sTexture, vec2(0.5 + vTextureCoord.x / 2.0, vTextureCoord.y)).r;\n"
+            + "  gl_FragColor = vec4(color.rgb, alpha);\n"
+            + "}\n";
+
     private double accuracy = 0.95;
 
     private String shader = alphaShader;
@@ -95,12 +106,19 @@ class VideoRenderer implements GLTextureView.Renderer, SurfaceTexture.OnFrameAva
 
     private SurfaceTexture surface;
     private boolean updateSurface = false;
+    private boolean updateShader = false;
 
     private static int GL_TEXTURE_EXTERNAL_OES = 0x8D65;
 
     private OnSurfacePrepareListener onSurfacePrepareListener;
 
     private boolean isCustom;
+
+    /**
+     * True if the video is an alpha packed video with the left half containing the color data
+     * and right half containing the alpha data
+     */
+    private boolean isPacked;
 
     private float redParam = 0.0f;
     private float greenParam = 1.0f;
@@ -117,11 +135,15 @@ class VideoRenderer implements GLTextureView.Renderer, SurfaceTexture.OnFrameAva
 
     @Override
     public void onDrawFrame(GL10 glUnused) {
-        synchronized(this) {
+        synchronized (this) {
             if (updateSurface) {
                 surface.updateTexImage();
                 surface.getTransformMatrix(sTMatrix);
                 updateSurface = false;
+            }
+            if (updateShader) {
+                initializeShader();
+                updateShader = false;
             }
         }
         GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
@@ -171,9 +193,16 @@ class VideoRenderer implements GLTextureView.Renderer, SurfaceTexture.OnFrameAva
 
     @Override
     public void onSurfaceCreated(GL10 glUnused, EGLConfig config) {
+        if (!initializeShader()) {
+            return;
+        }
+        prepareSurface();
+    }
+
+    public boolean initializeShader() {
         program = createProgram(vertexShader, this.resolveShader());
         if (program == 0) {
-            return;
+            return false;
         }
         aPositionHandle = GLES20.glGetAttribLocation(program, "aPosition");
         checkGlError("glGetAttribLocation aPosition");
@@ -197,8 +226,7 @@ class VideoRenderer implements GLTextureView.Renderer, SurfaceTexture.OnFrameAva
         if (uSTMatrixHandle == -1) {
             throw new RuntimeException("Could not get attrib location for uSTMatrix");
         }
-
-        prepareSurface();
+        return true;
     }
 
     private void prepareSurface() {
@@ -220,13 +248,17 @@ class VideoRenderer implements GLTextureView.Renderer, SurfaceTexture.OnFrameAva
         Surface surface = new Surface(this.surface);
         onSurfacePrepareListener.surfacePrepared(surface);
 
-        synchronized(this) {
+        synchronized (this) {
             updateSurface = false;
         }
     }
 
     synchronized public void onFrameAvailable(SurfaceTexture surface) {
         updateSurface = true;
+    }
+
+    synchronized public void refreshShader() {
+        updateShader = true;
     }
 
     private int loadShader(int shaderType, String source) {
@@ -286,6 +318,10 @@ class VideoRenderer implements GLTextureView.Renderer, SurfaceTexture.OnFrameAva
         shader = customShader;
     }
 
+    void setPacked(boolean isPacked) {
+        this.isPacked = isPacked;
+    }
+
     void setAccuracy(double accuracy) {
         if (accuracy > 1.0) {
             accuracy = 1.0;
@@ -300,7 +336,8 @@ class VideoRenderer implements GLTextureView.Renderer, SurfaceTexture.OnFrameAva
     }
 
     private String resolveShader() {
-        return isCustom ? shader : String.format(Locale.ENGLISH, alphaShader,
+        return isCustom ? shader : isPacked ?
+                alphaPackedShader : String.format(Locale.ENGLISH, alphaShader,
                 redParam, greenParam, blueParam, 1 - accuracy);
     }
 

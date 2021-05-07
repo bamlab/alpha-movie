@@ -55,6 +55,11 @@ public class AlphaMovieView extends GLTextureView {
     private boolean isSurfaceCreated;
     private boolean isDataSourceSet;
 
+    private float accuracy;
+    private int alphaColor;
+    private boolean isPacked;
+    private String shader;
+
     private PlayerState state = PlayerState.NOT_PREPARED;
 
     public AlphaMovieView(Context context, AttributeSet attrs) {
@@ -103,18 +108,28 @@ public class AlphaMovieView extends GLTextureView {
         if (attrs != null) {
             TypedArray arr = getContext().obtainStyledAttributes(attrs, R.styleable.AlphaMovieView);
             int alphaColor = arr.getColor(R.styleable.AlphaMovieView_alphaColor, NOT_DEFINED_COLOR);
-            if (alphaColor != NOT_DEFINED_COLOR) {
-                renderer.setAlphaColor(alphaColor);
-            }
+            boolean isPacked = arr.getBoolean(R.styleable.AlphaMovieView_packed, false);
             String shader = arr.getString(R.styleable.AlphaMovieView_shader);
-            if (shader != null) {
-                renderer.setCustomShader(shader);
-            }
             float accuracy = arr.getFloat(R.styleable.AlphaMovieView_accuracy, NOT_DEFINED);
-            if (accuracy != NOT_DEFINED) {
-                renderer.setAccuracy(accuracy);
-            }
+            this.alphaColor = alphaColor;
+            this.accuracy = accuracy;
+            this.isPacked = isPacked;
+            this.shader = shader;
             arr.recycle();
+            updateRendererOptions();
+        }
+    }
+
+    private void updateRendererOptions() {
+        renderer.setPacked(isPacked);
+        if (alphaColor != NOT_DEFINED_COLOR) {
+            renderer.setAlphaColor(alphaColor);
+        }
+        if (shader != null) {
+            renderer.setCustomShader(shader);
+        }
+        if (accuracy != NOT_DEFINED) {
+            renderer.setAccuracy(accuracy);
         }
     }
 
@@ -173,6 +188,11 @@ public class AlphaMovieView extends GLTextureView {
     private void onDataSourceSet(MediaMetadataRetriever retriever) {
         int videoWidth = Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH));
         int videoHeight = Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT));
+        if (isPacked) {
+            // Packed videos are assumed to be contain the alpha channel on the right side of the
+            // original video, so the actual video width is half of the whole video
+            videoWidth /= 2.0f;
+        }
 
         calculateVideoAspectRatio(videoWidth, videoHeight);
         isDataSourceSet = true;
@@ -180,6 +200,13 @@ public class AlphaMovieView extends GLTextureView {
         if (isSurfaceCreated) {
             prepareAndStartMediaPlayer();
         }
+    }
+
+    public void setPacked(boolean isPacked) {
+        this.isPacked = isPacked;
+        renderer.setPacked(isPacked);
+        updateRendererOptions();
+        renderer.refreshShader();
     }
 
     public void setVideoFromAssets(String assetsFileName) {
@@ -197,6 +224,11 @@ public class AlphaMovieView extends GLTextureView {
         } catch (IOException e) {
             Log.e(TAG, e.getMessage(), e);
         }
+    }
+
+    public void setVideoFromAssets(String assetsFileName, boolean isPacked) {
+        setPacked(isPacked);
+        setVideoFromAssets(assetsFileName);
     }
 
     public void setVideoByUrl(String url) {
