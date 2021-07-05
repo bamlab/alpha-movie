@@ -30,10 +30,10 @@ jobs:
             ${{ runner.os }}-gradle-
       - name: Setup version
         run: |
-          sed -i -E "s/0.0.0/$(git describe --abbrev=7 --tags --always --first-parent)/" ./build.gradle.kts
+          sed -i -E "s/0.0.0/$(git describe --abbrev=7 --tags --always --first-parent)/" ./alpha-movie/build.gradle.kts
           git describe --abbrev=7 --tags --always --first-parent
       - name: Publish
-        run: gradle publish
+        run: gradle :alpha-movie:publish
         env:
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}

@@ -30,7 +30,7 @@ Then add this dependency to your module's `build.gradle` file:
 ```gradle
 dependencies {
     // ... other dependencies
-    implementation 'io.github.nopol10:alpha-movie:1.3.7'
+    implementation 'tech.bam:alpha-movie:1.3.7'
 }
 ```
 
