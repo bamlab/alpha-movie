@@ -1,5 +1,7 @@
 ## Alpha Movie
 
+![Maven Central](https://img.shields.io/maven-central/v/tech.bam.alpha-movie/alpha-movie)
+
 Alpha Movie is an Android video player library with alpha channel support.
 
 Video Player uses `OpenGL` to render video and apply a *shader* that makes alpha compositing possible. The player encapsulates `MediaPlayer` and has its base functionality. Video stream is displayed by `TextureView`.
@@ -30,7 +32,7 @@ Then add this dependency to your module's `build.gradle` file:
 ```gradle
 dependencies {
     // ... other dependencies
-    implementation 'tech.bam:alpha-movie:1.3.7'
+    implementation 'tech.bam:alpha-movie:${version}'
 }
 ```
 
