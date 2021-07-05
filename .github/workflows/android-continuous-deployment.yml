@@ -1,4 +1,4 @@
-name: JVM Continuous Deployment
+name: Android Continuous Deployment
 
 on:
   push:
