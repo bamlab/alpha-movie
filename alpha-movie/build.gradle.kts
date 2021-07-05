@@ -9,7 +9,7 @@ version = "0.0.0-SNAPSHOT"
 
 android {
     compileSdkVersion(30)
-    buildToolsVersion("25.0.3")
+    buildToolsVersion("29.0.3")
 
     defaultConfig {
         minSdkVersion(18)

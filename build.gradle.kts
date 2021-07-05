@@ -3,6 +3,8 @@ plugins {
     id("io.codearte.nexus-staging") version "0.22.0"
 }
 
+group = "tech.bam"
+
 buildscript {
     repositories {
         google()
